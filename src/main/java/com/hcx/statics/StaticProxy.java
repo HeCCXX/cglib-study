@@ -17,6 +17,7 @@ public class StaticProxy implements Person{
 
     @Override
     public void sayPerson() {
+        System.out.println("代理类...");
         person.sayPerson();
     }
 }
