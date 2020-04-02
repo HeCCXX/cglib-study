@@ -1,4 +1,4 @@
-package com.hcx.com.hcx.cglib;
+package com.hcx.cglib;
 
 /**
  * @ClassName Person
