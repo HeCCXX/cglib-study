@@ -269,7 +269,7 @@ public class CglibMain {
 
 ### cglib 动态代理原理分析
 下面我们查看源码，分析cglib具体的实现步骤。
-首先是Enhancer类，cglib的Enhancer类用来指定要代理的目标对象（上述的Person类）和实际处理操作的对象（上述的MyMethodInceptor类），最后调用create()方法创建代理对象，对这个对象所以非final方法的调用都会转发到intercept方法中。
+首先是Enhancer类，cglib的Enhancer类用来指定要代理的目标对象（上述的Person类）和实际处理操作的对象（上述的MyMethodInceptor类），最后调用create()方法创建代理对象，对这个对象所有非final方法的调用都会转发到intercept方法中。
 下面的create方法主要完成的是对createHelper的调用。
 ```java
 public Object create() {
@@ -353,7 +353,7 @@ protected Object nextInstance(Object instance) {
 - arguments 是代理对象的构造方法参数
 - callbacks 是对应回调对象
 
-data.newInstance的方法源码如下，通过ReflectUtils反射生成代理对象，往下查看源码，最后会调用到Unsafe类的分配对象方法,最后将生成的代理对象返回，通过强转转换为我们定义的Person代理对象。
+data.newInstance的方法源码如下，通过ReflectUtils反射生成代理对象，往下查看源码，最后会调用到Unsafe类的分配对象方法,最后将生成的代理对象返回，通过强转，转换为我们定义的Person代理对象。
 `return UnsafeFieldAccessorImpl.unsafe.allocateInstance(this.constructor.getDeclaringClass());`
 ` public native Object allocateInstance(Class<?> var1) throws InstantiationException;`
 ```java
@@ -439,7 +439,7 @@ public void sayStudent(){
 
 这样的场景在有时候是这样需要的，但是有时候我们不需要方法调用都走一遍intercept，重复输出一些共用的内容。那么我们希望只走代理方法一遍，`Invoke the original method, on a different object of the same type.`在相同类型的不同对象上调用原始方法。
 
-这样我们就要修改代码，就不适用invokeSuper，改为invoke，并且需要类似jdk 代理，在设置回调对象时，新建一个被代理对象以参数传入，之后调用的方法也是调用的该对象的。<font color=red>注意invoke方法传入的对象时入参新建的被代理对象，不能是增强型对象，否则会死循环，导致栈溢出</font>
+这样我们就要修改代码，就不适用invokeSuper，改为invoke，并且需要类似jdk 代理，在设置回调对象时，新建一个被代理对象以参数传入，之后调用的方法也是调用的该对象的。<font color=red>注意invoke方法传入的对象是入参新建的被代理对象，不能是增强型对象，否则会死循环，导致栈溢出</font>
 MyMethodIntercept代码修改：
 ```java
 public class MyMethodInceptor implements MethodInterceptor {
